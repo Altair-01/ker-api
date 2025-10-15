@@ -13,8 +13,4 @@ public class ApplicationImmobiliereApplication {
 		SpringApplication.run(ApplicationImmobiliereApplication.class, args);
 	}
 
-    @GetMapping("/hello")
-    public String hello(){
-        return "salut";
-    }
 }

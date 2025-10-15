@@ -12,4 +12,9 @@ public interface UserService {
     User createUser(UserDTO userDTO);
     User updateUser(Long id, UserDTO userDTO);
     void deleteUser(Long id);
+    void setUserStatus(Long id, boolean active);
+    Optional<UserDTO> findByEmailOrPhone(String email, String phone);
+    Optional<UserDTO> findByEmail(String email);
+    Optional<UserDTO> findByPhone(String phone);
+
 }

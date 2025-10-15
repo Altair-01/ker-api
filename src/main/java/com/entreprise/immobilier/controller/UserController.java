@@ -20,7 +20,7 @@ public class UserController {
 
     /** 🔓 Accessible uniquement aux administrateurs */
     @PreAuthorize("hasRole('ADMINISTRATEUR')")
-    @GetMapping
+    @GetMapping("/all")
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -50,5 +50,33 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @GetMapping("/search")
+    public ResponseEntity<UserDTO> searchByEmailOrPhone(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false, name = "phone") String phoneNumber) {
+
+        return userService.findByEmailOrPhone(email, phoneNumber)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Recherche stricte par email (admin ou l'utilisateur lui-même) */
+    @PreAuthorize("hasRole('ADMINISTRATEUR') or #email == authentication.name")
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<UserDTO> getByEmail(@PathVariable String email) {
+        return userService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Recherche stricte par téléphone (réservé admin par défaut) */
+    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @GetMapping("/by-phone/{phone}")
+    public ResponseEntity<UserDTO> getByPhone(@PathVariable String phone) {
+        return userService.findByPhone(phone)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

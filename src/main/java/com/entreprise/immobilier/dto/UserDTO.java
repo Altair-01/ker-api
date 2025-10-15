@@ -1,9 +1,13 @@
 package com.entreprise.immobilier.dto;
 
+import com.entreprise.immobilier.model.Agent;
+import com.entreprise.immobilier.model.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -40,4 +44,7 @@ public class UserDTO {
     private String role;
 
     private boolean enabled = true;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

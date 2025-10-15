@@ -38,8 +38,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        // Routes protégées
-                        .anyRequest().authenticated()
+                        // Routes protégées par authenticated() que j'ai remplacé par permit all
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

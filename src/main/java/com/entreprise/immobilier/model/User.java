@@ -49,7 +49,7 @@ public class User implements UserDetails {
     private String role; // ex: client, agent, administrateur
 
     /** Statut du compte */
-    @Column(name = "enabled", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean enabled = true;
 
     /** Date de création */
