@@ -1,7 +1,7 @@
 package com.entreprise.immobilier.service.impl;
 
 import com.entreprise.immobilier.dto.UserDTO;
-import com.entreprise.immobilier.mapper.UserMapper;
+import com.entreprise.immobilier.UserMapper;
 import com.entreprise.immobilier.model.User;
 import com.entreprise.immobilier.repository.UserRepository;
 import com.entreprise.immobilier.service.interfaces.UserService;
