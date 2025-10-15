@@ -1,14 +1,20 @@
 package com.entreprise.immobilier.repository;
 
 import com.entreprise.immobilier.model.Message;
+import com.entreprise.immobilier.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-// 🔹 MESSAGES
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    List<Message> findBySenderId(Long senderId);
-    List<Message> findByReceiverId(Long receiverId);
+
+    List<Message> findBySender(User sender);
+
+    List<Message> findByReceiver(User receiver);
+
+    List<Message> findBySenderAndReceiver(User sender, User receiver);
+
+    List<Message> findByReceiverAndIsReadFalse(User receiver);
 }

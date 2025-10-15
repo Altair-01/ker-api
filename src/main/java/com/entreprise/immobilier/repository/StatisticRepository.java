@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-// 🔹 STATISTICS
 @Repository
 public interface StatisticRepository extends JpaRepository<Statistic, Long> {
     List<Statistic> findByType(String type);

@@ -1,27 +1,56 @@
 package com.entreprise.immobilier.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "logs", schema = "audit")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "logs", schema = "core")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Log {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    /** 👤 L’utilisateur à l’origine de l’action */
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    /** ⚙️ Type d’action (connexion, modification, suppression, etc.) */
+    @NotBlank(message = "L'action est obligatoire.")
+    @Column(nullable = false, length = 255)
     private String action;
 
-    private LocalDateTime timestamp = LocalDateTime.now();
+    /** 🕒 Horodatage automatique */
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
 
-    @Column(columnDefinition = "json")
+    /** 🧠 Détails supplémentaires de l’action (JSON) */
+    @Column(columnDefinition = "jsonb")
     private String details;
+
+    @PrePersist
+    public void prePersist() {
+        if (timestamp == null) {
+            timestamp = LocalDateTime.now();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Log{" +
+                "id=" + id +
+                ", action='" + action + '\'' +
+                ", userId=" + (user != null ? user.getId() : null) +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }
