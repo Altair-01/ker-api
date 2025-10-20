@@ -1,5 +1,6 @@
 package com.entreprise.immobilier.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,11 +9,10 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * 🔒 Gère les erreurs d’accès non autorisé (401 Unauthorized)
- * quand aucun token JWT valide n’est fourni.
- */
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -22,13 +22,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException authException)
             throws IOException, ServletException {
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write("""
-            {
-              "error": "Accès non autorisé",
-              "message": "Token invalide ou manquant."
-            }
-        """);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("timestamp", LocalDateTime.now());
+        errorDetails.put("status", 401);
+        errorDetails.put("error", "Accès non autorisé");
+        errorDetails.put("message", "Token invalide, expiré ou manquant.");
+
+        new ObjectMapper().writeValue(response.getOutputStream(), errorDetails);
     }
 }
