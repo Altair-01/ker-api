@@ -38,7 +38,7 @@ public class Message {
     private String message;
 
     /** 🕒 Date d’envoi du message */
-    @Column(nullable = false)
+    @Column(name = "sent_at", nullable = false)
     private LocalDateTime date;
 
     /** ✅ Indique si le message a été lu ou non */

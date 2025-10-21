@@ -1,10 +1,17 @@
 package com.entreprise.immobilier.dto;
 
+import com.entreprise.immobilier.model.PropertyStatus;
+import com.entreprise.immobilier.model.PropertyType;
 import jakarta.validation.constraints.*;
-import lombok.Data;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PropertyDTO {
+
+    private Long id;
 
     @NotBlank(message = "Le titre est obligatoire.")
     private String title;
@@ -15,7 +22,7 @@ public class PropertyDTO {
     private double price;
 
     @Min(value = 1, message = "La taille doit être positive.")
-    private int size;
+    private double size;
 
     @NotBlank(message = "L'adresse est obligatoire.")
     private String address;
@@ -23,14 +30,15 @@ public class PropertyDTO {
     @NotBlank(message = "La ville est obligatoire.")
     private String city;
 
-    @NotBlank(message = "Le code postal est obligatoire.")
     private String postalCode;
 
-    @Pattern(regexp = "^(appartement|maison|terrain)$", message = "Type invalide.")
+    @NotNull(message = "Le type est obligatoire.")
     private String type;
 
-    @Pattern(regexp = "^(à vendre|à louer|vendu|loué)$", message = "Statut invalide.")
+    @NotNull(message = "Le statut est obligatoire.")
     private String status;
 
+    private String createdAt;
+    private String updatedAt;
     private Long agentId;
 }

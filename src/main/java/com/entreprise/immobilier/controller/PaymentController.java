@@ -6,6 +6,7 @@ import com.entreprise.immobilier.service.interfaces.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<Payment> getAllPayments() {
         return paymentService.getAllPayments();

@@ -37,7 +37,7 @@ public class Contract {
 
     /** 📑 Type de contrat : location ou vente */
     @NotNull(message = "Le type de contrat est obligatoire.")
-    @Column(length = 50, nullable = false)
+    @Column(name = "contract_type", length = 50, nullable = false)
     private String type;
 
     /** 📆 Date de début du contrat */

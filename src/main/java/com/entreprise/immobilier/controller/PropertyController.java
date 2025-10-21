@@ -1,11 +1,12 @@
 package com.entreprise.immobilier.controller;
 
 import com.entreprise.immobilier.dto.PropertyDTO;
-import com.entreprise.immobilier.model.Property;
+import com.entreprise.immobilier.model.PropertyStatus;
+import com.entreprise.immobilier.model.PropertyType;
 import com.entreprise.immobilier.service.interfaces.PropertyService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,41 +18,42 @@ public class PropertyController {
 
     private final PropertyService propertyService;
 
+    /** ✅ Obtenir toutes les propriétés */
     @GetMapping
-    public List<Property> getAllProperties() {
-        return propertyService.getAllProperties();
+    public ResponseEntity<List<PropertyDTO>> getAllProperties() {
+        return ResponseEntity.ok(propertyService.getAllProperties());
     }
 
+    /** ✅ Obtenir une propriété par ID */
     @GetMapping("/{id}")
-    public ResponseEntity<Property> getPropertyById(@PathVariable Long id) {
-        return propertyService.getPropertyById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PropertyDTO> getPropertyById(@PathVariable Long id) {
+        return ResponseEntity.ok(propertyService.getPropertyById(id));
     }
 
-    @GetMapping("/agent/{agentId}")
-    public ResponseEntity<List<Property>> getPropertiesByAgent(@PathVariable Long agentId) {
-        return ResponseEntity.ok(propertyService.getPropertiesByAgent(agentId));
-    }
-
-    @GetMapping("/city/{city}")
-    public ResponseEntity<List<Property>> getPropertiesByCity(@PathVariable String city) {
-        return ResponseEntity.ok(propertyService.getPropertiesByCity(city));
-    }
-
+    /** ✅ Créer une propriété (réservé aux agents et admins) */
+    @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")
     @PostMapping
-    public ResponseEntity<Property> createProperty(@Valid @RequestBody PropertyDTO dto) {
-        return ResponseEntity.ok(propertyService.createProperty(dto));
+    public ResponseEntity<PropertyDTO> createProperty(@RequestBody PropertyDTO propertyDTO) {
+        return ResponseEntity.ok(propertyService.createProperty(propertyDTO));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Property> updateProperty(@PathVariable Long id, @Valid @RequestBody PropertyDTO dto) {
-        return ResponseEntity.ok(propertyService.updateProperty(id, dto));
-    }
-
+    /** 🚫 Supprimer une propriété (réservé aux admins uniquement) */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProperty(@PathVariable Long id) {
         propertyService.deleteProperty(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /** 🔍 Recherche avancée */
+    @GetMapping("/search")
+    public ResponseEntity<List<PropertyDTO>> searchProperties(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) PropertyType type,
+            @RequestParam(required = false) PropertyStatus status,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        return ResponseEntity.ok(propertyService.searchProperties(city, type, status, minPrice, maxPrice));
     }
 }

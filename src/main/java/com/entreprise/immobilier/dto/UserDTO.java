@@ -1,7 +1,6 @@
 package com.entreprise.immobilier.dto;
 
-import com.entreprise.immobilier.model.Agent;
-import com.entreprise.immobilier.model.User;
+import com.entreprise.immobilier.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -9,6 +8,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * 🎯 Représentation simplifiée de l’utilisateur pour les échanges API.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +29,7 @@ public class UserDTO {
     @NotBlank(message = "L'email est obligatoire.")
     private String email;
 
-    @NotBlank(message = "Le mot de passe est obligatoire.")
+    /** ⚠️ Le mot de passe est uniquement utilisé à la création */
     private String password;
 
     @Pattern(
@@ -36,12 +38,8 @@ public class UserDTO {
     )
     private String phoneNumber;
 
-    @NotBlank(message = "Le rôle est obligatoire.")
-    @Pattern(
-            regexp = "^(client|agent|administrateur)$",
-            message = "Le rôle doit être 'client', 'agent' ou 'administrateur'."
-    )
-    private String role;
+    /** 🎭 Rôle de l’utilisateur (ADMIN, AGENT, CLIENT) */
+    private Role role; // 🔥 type enum, cohérent avec ton modèle User
 
     private boolean enabled = true;
 

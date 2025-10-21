@@ -1,5 +1,6 @@
 package com.entreprise.immobilier.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User implements UserDetails {
 
     @Id
@@ -45,68 +47,58 @@ public class User implements UserDetails {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    /** 👤 Rôle utilisateur (ADMIN, AGENT, CLIENT) */
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role; // ex: client, agent, administrateur
+    private Role role;
 
-    /** Statut du compte */
+    /** ✅ Statut du compte */
     @Column(name = "is_active", nullable = false)
     private boolean enabled = true;
 
-    /** Date de création */
+    /** 🕒 Dates automatiques */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    /** Date de mise à jour */
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    /** Met à jour la date automatiquement avant chaque update */
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /* ============================================================
-       Implémentation de UserDetails (Spring Security)
-       ============================================================ */
-
+    /** ============================================================
+     *  Implémentation de UserDetails (Spring Security)
+     * ============================================================ */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
-
 
     @Override
     public String getUsername() {
-        return email; // on utilise l'email comme identifiant
+        return email;
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
+    public boolean isEnabled() { return enabled; }
 
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", email='" + email + '\'' +
-                ", role='" + role + '\'' +
+                ", role=" + role +
                 ", enabled=" + enabled +
                 '}';
     }

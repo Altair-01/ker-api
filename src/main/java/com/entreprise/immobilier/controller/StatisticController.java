@@ -18,7 +18,7 @@ public class StatisticController {
 
     private final StatisticService statisticService;
 
-    @PreAuthorize("hasRole('ADMINISTRATEUR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<Statistic> getAllStatistics() {
         return statisticService.getAllStatistics();

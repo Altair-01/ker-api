@@ -1,17 +1,20 @@
 package com.entreprise.immobilier.service.interfaces;
 
 import com.entreprise.immobilier.dto.PropertyDTO;
-import com.entreprise.immobilier.model.Property;
+import com.entreprise.immobilier.model.PropertyStatus;
+import com.entreprise.immobilier.model.PropertyType;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PropertyService {
-    List<Property> getAllProperties();
-    Optional<Property> getPropertyById(Long id);
-    Property createProperty(PropertyDTO dto);
-    Property updateProperty(Long id, PropertyDTO dto);
+
+    List<PropertyDTO> getAllProperties();
+
+    PropertyDTO getPropertyById(Long id);
+
+    PropertyDTO createProperty(PropertyDTO dto);
+
     void deleteProperty(Long id);
-    List<Property> getPropertiesByAgent(Long agentId);
-    List<Property> getPropertiesByCity(String city);
+
+    List<PropertyDTO> searchProperties(String city, PropertyType type, PropertyStatus status, Double minPrice, Double maxPrice);
 }

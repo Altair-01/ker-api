@@ -6,6 +6,7 @@ import com.entreprise.immobilier.service.interfaces.MessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class MessageController {
         return ResponseEntity.ok(messageService.getMessagesSentByUser(senderId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/received/{receiverId}")
     public ResponseEntity<List<Message>> getMessagesReceived(@PathVariable Long receiverId) {
         return ResponseEntity.ok(messageService.getMessagesReceivedByUser(receiverId));

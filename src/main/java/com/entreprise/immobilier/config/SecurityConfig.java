@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // permet d’utiliser @PreAuthorize sur les méthodes
+@EnableMethodSecurity(prePostEnabled = true) // pour utiliser @PreAuthorize
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -28,44 +28,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 🔒 Désactivation CSRF car on utilise JWT (stateless)
+                // 🔒 Désactivation CSRF (on est en JWT stateless)
                 .csrf(csrf -> csrf.disable())
 
-                // ⚠️ Gestion des erreurs JWT via JwtAuthenticationEntryPoint
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                )
+                // ⚠️ Gestion personnalisée des erreurs JWT
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 
-                // 🧩 Sessions désactivées (JWT → stateless)
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                // 🧩 Pas de session (JWT → stateless)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 🚪 Configuration des autorisations
+                // 🚪 Définition des autorisations d’accès
                 .authorizeHttpRequests(auth -> auth
-                        // Routes publiques
+                        // 🌍 Routes publiques
                         .requestMatchers(
                                 "/api/auth/**",
+                                "/api/properties",
+                                "/api/properties/search",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Exemple : accessible seulement aux admins
-                        // .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 👮‍♂️ Routes réservées
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/agents/**").hasAnyRole("AGENT", "ADMIN")
+                        .requestMatchers("/api/agents/**").hasAnyRole("ADMIN", "AGENT")
 
-                        // Routes par défaut : protégées
+                        // 🔐 Tout le reste nécessite un token JWT valide
                         .anyRequest().authenticated()
                 )
 
-                // 🔁 Injection du filtre JWT avant l’auth classique
+                // 🔁 Ajout du filtre JWT avant l’authentification standard
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /** 🔑 Encodeur de mots de passe */
+    /** 🔑 Encodeur de mots de passe sécurisé */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

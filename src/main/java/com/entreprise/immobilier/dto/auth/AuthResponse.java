@@ -1,5 +1,6 @@
 package com.entreprise.immobilier.dto.auth;
 
+import com.entreprise.immobilier.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +18,5 @@ public class AuthResponse {
     private String token;          // Access Token (JWT)
     private String refreshToken;   // Refresh Token
     private String email;          // Email de l’utilisateur
-    private String role;           // Rôle de l’utilisateur
+    private Role role;           // Rôle de l’utilisateur
 }

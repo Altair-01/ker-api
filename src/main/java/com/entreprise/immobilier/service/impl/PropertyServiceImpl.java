@@ -1,98 +1,80 @@
 package com.entreprise.immobilier.service.impl;
 
 import com.entreprise.immobilier.dto.PropertyDTO;
-import com.entreprise.immobilier.model.Agent;
+import com.entreprise.immobilier.mapper.PropertyMapper;
 import com.entreprise.immobilier.model.Property;
-import com.entreprise.immobilier.repository.AgentRepository;
+import com.entreprise.immobilier.model.PropertyStatus;
+import com.entreprise.immobilier.model.PropertyType;
 import com.entreprise.immobilier.repository.PropertyRepository;
 import com.entreprise.immobilier.service.interfaces.PropertyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PropertyServiceImpl implements PropertyService {
 
     private final PropertyRepository propertyRepository;
-    private final AgentRepository agentRepository;
+    private final PropertyMapper propertyMapper;
 
+    /** 🔹 Récupérer tous les biens */
     @Override
-    public List<Property> getAllProperties() {
-        return propertyRepository.findAll();
+    public List<PropertyDTO> getAllProperties() {
+        return propertyRepository.findAll()
+                .stream()
+                .map(propertyMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
+    /** 🔹 Récupérer un bien par ID */
     @Override
-    public Optional<Property> getPropertyById(Long id) {
-        return propertyRepository.findById(id);
+    public PropertyDTO getPropertyById(Long id) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Propriété non trouvée avec l'ID : " + id));
+        return propertyMapper.toDTO(property);
     }
 
+    /** 🔹 Créer un nouveau bien */
     @Override
-    public Property createProperty(PropertyDTO dto) {
-        Agent agent = null;
-        if (dto.getAgentId() != null) {
-            agent = agentRepository.findById(dto.getAgentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Agent introuvable."));
-        }
-
-        Property property = Property.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .price(dto.getPrice())
-                .size(dto.getSize())
-                .address(dto.getAddress())
-                .city(dto.getCity())
-                .postalCode(dto.getPostalCode())
-                .type(dto.getType())
-                .status(dto.getStatus())
-                .agent(agent)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        return propertyRepository.save(property);
+    public PropertyDTO createProperty(PropertyDTO dto) {
+        Property property = propertyMapper.toEntity(dto);
+        Property saved = propertyRepository.save(property);
+        return propertyMapper.toDTO(saved);
     }
 
-    @Override
-    public Property updateProperty(Long id, PropertyDTO dto) {
-        Property existing = propertyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Bien introuvable."));
-
-        existing.setTitle(dto.getTitle());
-        existing.setDescription(dto.getDescription());
-        existing.setPrice(dto.getPrice());
-        existing.setSize(dto.getSize());
-        existing.setAddress(dto.getAddress());
-        existing.setCity(dto.getCity());
-        existing.setPostalCode(dto.getPostalCode());
-        existing.setType(dto.getType());
-        existing.setStatus(dto.getStatus());
-        existing.setUpdatedAt(LocalDateTime.now());
-
-        return propertyRepository.save(existing);
-    }
-
+    /** 🔹 Supprimer un bien */
     @Override
     public void deleteProperty(Long id) {
         if (!propertyRepository.existsById(id)) {
-            throw new EntityNotFoundException("Bien introuvable.");
+            throw new EntityNotFoundException("Propriété non trouvée avec l'ID : " + id);
         }
         propertyRepository.deleteById(id);
     }
 
+    /** 🔹 Rechercher des biens par critères dynamiques */
     @Override
-    public List<Property> getPropertiesByAgent(Long agentId) {
-        Agent agent = agentRepository.findById(agentId)
-                .orElseThrow(() -> new EntityNotFoundException("Agent introuvable."));
-        return propertyRepository.findByAgent(agent);
-    }
+    public List<PropertyDTO> searchProperties(
+            String city,
+            PropertyType type,
+            PropertyStatus status,
+            Double minPrice,
+            Double maxPrice
+    ) {
+        // Journalisation optionnelle pour debug
+        System.out.printf(
+                "[Recherche] city=%s | type=%s | status=%s | minPrice=%.2f | maxPrice=%.2f%n",
+                city, type, status, minPrice, maxPrice
+        );
 
-    @Override
-    public List<Property> getPropertiesByCity(String city) {
-        return propertyRepository.findByCity(city);
+        List<Property> results = propertyRepository.search(city, type, status, minPrice, maxPrice);
+        return results.stream()
+                .map(propertyMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

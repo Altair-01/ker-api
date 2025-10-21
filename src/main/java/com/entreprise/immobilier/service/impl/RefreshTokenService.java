@@ -34,13 +34,9 @@ public class RefreshTokenService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
 
-        try {
-            // Supprime l’ancien token avant d’en créer un nouveau
-            refreshTokenRepository.deleteByUser(user);
-            refreshTokenRepository.flush(); // ⚡ force l'exécution immédiate du DELETE
-        } catch (Exception e) {
-            log.warn("⚠️ Impossible de supprimer l’ancien refresh token de l’utilisateur {} : {}", user.getEmail(), e.getMessage());
-        }
+        // 🔹 Supprime tous les anciens tokens du user avant d’en créer un nouveau
+        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.flush(); // ✅ force la suppression immédiate
 
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
@@ -48,11 +44,9 @@ public class RefreshTokenService {
                 .expiryDate(Instant.now().plusMillis(REFRESH_TOKEN_DURATION_MS))
                 .build();
 
-        RefreshToken savedToken = refreshTokenRepository.save(refreshToken);
-        log.info("✅ Nouveau refresh token créé pour l’utilisateur {}", user.getEmail());
-
-        return savedToken;
+        return refreshTokenRepository.save(refreshToken);
     }
+
 
     /**
      * ✅ Vérifie si le refresh token est encore valide

@@ -1,5 +1,6 @@
 package com.entreprise.immobilier.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class Agent {
     /** Relation vers User : chaque agent correspond à un utilisateur */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_agent_user"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     /** Relation vers Agency : un agent appartient à une agence */
