@@ -1,89 +1,74 @@
 package com.entreprise.immobilier.service.impl;
 
-import com.entreprise.immobilier.dto.GalleryDTO;
 import com.entreprise.immobilier.model.Gallery;
 import com.entreprise.immobilier.model.Property;
 import com.entreprise.immobilier.repository.GalleryRepository;
 import com.entreprise.immobilier.repository.PropertyRepository;
-import com.entreprise.immobilier.service.interfaces.GalleryService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class GalleryServiceImpl implements GalleryService {
+public class GalleryServiceImpl {
 
-    private final GalleryRepository galleryRepository;
     private final PropertyRepository propertyRepository;
+    private final GalleryRepository galleryRepository;
 
-    @Override
-    public List<Gallery> getAllGalleries() {
-        return galleryRepository.findAll();
-    }
+    private static final String UPLOAD_DIR = "uploads/";
 
-    @Override
-    public Optional<Gallery> getGalleryById(Long id) {
-        return galleryRepository.findById(id);
-    }
-
-    @Override
-    public Gallery createGallery(GalleryDTO dto) {
-        Property property = propertyRepository.findById(dto.getPropertyId())
-                .orElseThrow(() -> new EntityNotFoundException("Bien immobilier introuvable."));
-
-        // Si isMain = true, désactiver les autres images principales du même bien
-        if (dto.isMain()) {
-            List<Gallery> mainImages = galleryRepository.findByPropertyAndIsMainTrue(property);
-            mainImages.forEach(img -> img.setMain(false));
-            galleryRepository.saveAll(mainImages);
-        }
-
-        Gallery gallery = Gallery.builder()
-                .property(property)
-                .imageUrl(dto.getImageUrl())
-                .isMain(dto.isMain())
-                .build();
-
-        return galleryRepository.save(gallery);
-    }
-
-    @Override
-    public Gallery updateGallery(Long id, GalleryDTO dto) {
-        Gallery existing = galleryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Image introuvable."));
-
-        Property property = propertyRepository.findById(dto.getPropertyId())
-                .orElseThrow(() -> new EntityNotFoundException("Bien immobilier introuvable."));
-
-        if (dto.isMain()) {
-            List<Gallery> mainImages = galleryRepository.findByPropertyAndIsMainTrue(property);
-            mainImages.forEach(img -> img.setMain(false));
-            galleryRepository.saveAll(mainImages);
-        }
-
-        existing.setProperty(property);
-        existing.setImageUrl(dto.getImageUrl());
-        existing.setMain(dto.isMain());
-
-        return galleryRepository.save(existing);
-    }
-
-    @Override
-    public void deleteGallery(Long id) {
-        if (!galleryRepository.existsById(id)) {
-            throw new EntityNotFoundException("Image introuvable.");
-        }
-        galleryRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Gallery> getGalleryByProperty(Long propertyId) {
+    /** 📤 Upload d'images de propriété */
+    public List<Gallery> uploadGallery(Long propertyId, List<MultipartFile> files) throws IOException {
         Property property = propertyRepository.findById(propertyId)
-                .orElseThrow(() -> new EntityNotFoundException("Bien immobilier introuvable."));
-        return galleryRepository.findByProperty(property);
+                .orElseThrow(() -> new RuntimeException("Propriété non trouvée avec l'ID : " + propertyId));
+
+        Files.createDirectories(Paths.get(UPLOAD_DIR));
+
+        List<Gallery> savedImages = new ArrayList<>();
+
+        boolean isFirst = true; // ✅ marquera la première comme image principale
+
+        for (MultipartFile file : files) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            Files.write(filePath, file.getBytes());
+
+            Gallery image = Gallery.builder()
+                    .property(property)
+                    .imageUrl("uploads/" + fileName)
+                    .isMain(isFirst) // ✅ première image = main
+                    .build();
+
+            savedImages.add(galleryRepository.save(image));
+            isFirst = false;
+        }
+
+        return savedImages;
+    }
+
+    /** 📸 Récupérer toutes les images associées à une propriété */
+    public List<Gallery> getGalleryByProperty(Long propertyId) {
+        return galleryRepository.findByPropertyId(propertyId);
+    }
+
+    /** ❌ Supprimer une image */
+    public void deleteGalleryImage(Long imageId) {
+        Gallery image = galleryRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image introuvable dans la galerie"));
+
+        // Suppression du fichier physique
+        Path filePath = Paths.get(UPLOAD_DIR + image.getImageUrl());
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            System.err.println("⚠ Impossible de supprimer l'image du disque : " + filePath);
+        }
+
+        galleryRepository.deleteById(imageId);
     }
 }

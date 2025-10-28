@@ -49,11 +49,21 @@ public class PropertyController {
     @GetMapping("/search")
     public ResponseEntity<List<PropertyDTO>> searchProperties(
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) PropertyType type,
-            @RequestParam(required = false) PropertyStatus status,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice
     ) {
-        return ResponseEntity.ok(propertyService.searchProperties(city, type, status, minPrice, maxPrice));
+        PropertyType typeEnum = (type != null && !type.isBlank())
+                ? PropertyType.fromValue(type)
+                : null;
+
+        PropertyStatus statusEnum = (status != null && !status.isBlank())
+                ? PropertyStatus.fromValue(status)
+                : null;
+
+        List<PropertyDTO> results = propertyService.searchProperties(city, typeEnum, statusEnum, minPrice, maxPrice);
+        return ResponseEntity.ok(results);
     }
+
 }

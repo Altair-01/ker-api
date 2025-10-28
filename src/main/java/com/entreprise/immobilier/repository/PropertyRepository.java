@@ -16,12 +16,12 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Query("""
         SELECT p FROM Property p
         WHERE 
-            (:city IS NULL OR LOWER(CAST(p.city AS string)) LIKE LOWER(CONCAT('%', :city, '%')))
+            (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))
         AND (:type IS NULL OR p.type = :type)
         AND (:status IS NULL OR p.status = :status)
         AND (:minPrice IS NULL OR p.price >= :minPrice)
         AND (:maxPrice IS NULL OR p.price <= :maxPrice)
-        """)
+    """)
     List<Property> search(
             @Param("city") String city,
             @Param("type") PropertyType type,

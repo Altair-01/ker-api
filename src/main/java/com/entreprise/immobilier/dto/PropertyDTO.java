@@ -5,6 +5,8 @@ import com.entreprise.immobilier.model.PropertyType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,6 +39,8 @@ public class PropertyDTO {
 
     @NotNull(message = "Le statut est obligatoire.")
     private String status;
+
+    private List<GalleryDTO> gallery;
 
     private String createdAt;
     private String updatedAt;

@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +34,16 @@ public class SecurityConfig {
                 // 🔒 Désactivation CSRF (on est en JWT stateless)
                 .csrf(csrf -> csrf.disable())
 
+                // 🌐 Configuration CORS
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173")); // ton front React
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
+
                 // ⚠️ Gestion personnalisée des erreurs JWT
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 
@@ -39,17 +52,19 @@ public class SecurityConfig {
 
                 // 🚪 Définition des autorisations d’accès
                 .authorizeHttpRequests(auth -> auth
-                        // 🌍 Routes publiques
+                        // 🌍 Routes publiques (consultation sans connexion)
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/properties",
-                                "/api/properties/search",
+                                "/api/properties/**", // toutes les routes propriétés publiques
+                                "/uploads/**",          // ⬅️ Autorise l’accès aux images
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // 👮‍♂️ Routes réservées
+                        // 👮‍♂️ Routes réservées aux administrateurs
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 👷‍♂️ Routes réservées aux agents ou admins
                         .requestMatchers("/api/agents/**").hasAnyRole("ADMIN", "AGENT")
 
                         // 🔐 Tout le reste nécessite un token JWT valide

@@ -10,14 +10,37 @@ public enum PropertyStatus {
     rented;     // Loué
 
     /**
-     * Permet de retrouver un statut à partir d'une chaîne (insensible à la casse).
+     * Convertit une chaîne vers un statut valide, en acceptant les libellés FR et EN.
      */
     public static PropertyStatus fromValue(String value) {
-        for (PropertyStatus status : values()) {
-            if (status.name().equalsIgnoreCase(value)) {
-                return status;
-            }
+        if (value == null) return null;
+
+        value = value.trim().toLowerCase();
+
+        switch (value) {
+            case "à vendre":
+            case "a vendre":
+            case "for_sale":
+            case "forsale":
+                return for_sale;
+
+            case "à louer":
+            case "a louer":
+            case "for_rent":
+            case "forrent":
+                return for_rent;
+
+            case "vendu":
+            case "sold":
+                return sold;
+
+            case "loué":
+            case "loue":
+            case "rented":
+                return rented;
+
+            default:
+                throw new IllegalArgumentException("Statut invalide : " + value);
         }
-        throw new IllegalArgumentException("Statut invalide : " + value);
     }
 }

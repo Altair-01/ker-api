@@ -6,12 +6,23 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 🏠 Entité représentant un bien immobilier dans le système KER.
  */
 @Entity
-@Table(name = "properties", schema = "core")
+@Table(
+        name = "properties",
+        schema = "core",
+        indexes = {
+                @Index(name = "idx_property_city", columnList = "city"),
+                @Index(name = "idx_property_type", columnList = "type"),
+                @Index(name = "idx_property_status", columnList = "status"),
+                @Index(name = "idx_property_price", columnList = "price")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -102,4 +113,10 @@ public class Property {
                 id, title, price, city, status
         );
     }
+
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Gallery> gallery;
+
+
 }

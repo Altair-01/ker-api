@@ -36,9 +36,14 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public PropertyDTO getPropertyById(Long id) {
         Property property = propertyRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Propriété non trouvée avec l'ID : " + id));
+                .orElseThrow(() -> new RuntimeException("Bien introuvable"));
+
+        // ⚠️ Force le chargement des images (si LAZY)
+        property.getGallery().size();
+
         return propertyMapper.toDTO(property);
     }
+
 
     /** 🔹 Créer un nouveau bien */
     @Override
@@ -59,22 +64,11 @@ public class PropertyServiceImpl implements PropertyService {
 
     /** 🔹 Rechercher des biens par critères dynamiques */
     @Override
-    public List<PropertyDTO> searchProperties(
-            String city,
-            PropertyType type,
-            PropertyStatus status,
-            Double minPrice,
-            Double maxPrice
-    ) {
-        // Journalisation optionnelle pour debug
-        System.out.printf(
-                "[Recherche] city=%s | type=%s | status=%s | minPrice=%.2f | maxPrice=%.2f%n",
-                city, type, status, minPrice, maxPrice
-        );
-
-        List<Property> results = propertyRepository.search(city, type, status, minPrice, maxPrice);
-        return results.stream()
+    public List<PropertyDTO> searchProperties(String city, PropertyType type, PropertyStatus status, Double minPrice, Double maxPrice) {
+        return propertyRepository.search(city, type, status, minPrice, maxPrice)
+                .stream()
                 .map(propertyMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
 }

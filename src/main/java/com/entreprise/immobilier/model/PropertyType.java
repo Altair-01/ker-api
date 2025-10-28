@@ -9,14 +9,28 @@ public enum PropertyType {
     land;       // Terrain
 
     /**
-     * Permet de retrouver un type à partir d'une chaîne (insensible à la casse).
+     * Convertit une chaîne vers un type valide (tolérante, insensible à la casse, FR/EN).
      */
     public static PropertyType fromValue(String value) {
-        for (PropertyType type : values()) {
-            if (type.name().equalsIgnoreCase(value)) {
-                return type;
-            }
+        if (value == null) return null;
+
+        value = value.trim().toLowerCase();
+
+        switch (value) {
+            case "appartement":
+            case "apartment":
+                return apartment;
+
+            case "maison":
+            case "house":
+                return house;
+
+            case "terrain":
+            case "land":
+                return land;
+
+            default:
+                throw new IllegalArgumentException("Type de bien invalide : " + value);
         }
-        throw new IllegalArgumentException("Type de bien invalide : " + value);
     }
 }
